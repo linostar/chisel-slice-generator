@@ -99,6 +99,7 @@ def filter_contents(contents):
                     "changelog",
                     "/usr/share/bug/",
                     "/usr/share/lintian/",
+                    "README",
                 ]
             )
             or "copyright" in item
