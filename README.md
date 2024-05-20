@@ -5,12 +5,12 @@ This will currently output only one slice per package, listing all dependencies 
 ## How to run
 Run:
 ```
-./slice_checker.py <arch> <release_number> <package>
+./slice_checker.py <release_number> <arch> <package>
 ```
 
 For example:
 ```
-./slice_checker.py amd64 24.04 libcap2
+./slice_checker.py 24.04 amd64 libcap2
 ```
 
 The output of the above example command will look like something like the following:
