@@ -1,6 +1,6 @@
 # chisel-slice-checker
 A checker script for chisel slice definition files.
-This will currently output only one slice per package, listing all dependencies (package names not slices) and contents under that slice. The output is kind of raw and doesn't include glob optimized file naming yet, but it can serve as a good basis to create the desired slice definition files.
+The script will only output one slice per package, listing all dependencies (package names not slices) and contents under that slice. The output will include a list of dependency package names and a list of file paths for contents. The output will need manual alteration to convert package names to slices, and/or to simplify the path patterns or use Chisel directives if applicable. It can serve as a good basis to create the desired slice definition files.
 
 ## How to run
 Run:
@@ -27,3 +27,12 @@ slices:
       /usr/lib/x86_64-linux-gnu/libpsx.so.2.66:
       /usr/share/doc/libcap2/copyright:
 ```
+
+## Implemented features
+- [x] Dependency generation
+- [x] Content generation
+- [ ] Support for maintainer scripts
+- [ ] Recognition of arch-specific dependencies
+- [ ] Simplification of contents list using glob patterns
+- [ ] Usage of arch-agnostic paths in contents list
+- [ ] Support for chisel directives
