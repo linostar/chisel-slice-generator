@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
 
+import sys
 import requests
 import argparse
 import yaml
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# allow http[s] retries with increasing delays
+retry_strategy = Retry(
+    total=5,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["HEAD", "GET", "OPTIONS"]
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
 
 
 class Dumper(yaml.Dumper):
@@ -29,34 +44,46 @@ def represent_empty_string(dumper, data):
 
 
 def get_package_dependencies(version_name, package_name):
-    url = f"https://packages.ubuntu.com/{version_name}/{package_name}"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
     dependencies = []
-    uldeps = soup.find_all("ul", class_="uldep")
-    for i in range(len(uldeps)):
-        if i == 0:
-            continue
-        uldep = uldeps[i]
-        list_items = uldep.find_all("li")
-        for li in list_items:  # skip the first item which is the title
-            dep = li.find("a")
-            if dep:
-                dependencies.append(dep.text)
-    return sorted(dependencies)
+    try:
+        url = f"https://packages.ubuntu.com/{version_name}/{package_name}"
+        response = http.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        uldeps = soup.find_all("ul", class_="uldep")
+        for i in range(len(uldeps)):
+            if i == 0:
+                continue
+            uldep = uldeps[i]
+            list_items = uldep.find_all("li")
+            for li in list_items:  # skip the first item which is the title
+                dep = li.find("a")
+                if dep:
+                    dependencies.append(dep.text)
+    except requests.exceptions.RequestException as e:
+        print(f"Network-related error: {e}", file=sys.stderr)
+    except AttributeError as e:
+        print(f"Parsing error: {e}", file=sys.stderr)
+    finally:
+        return sorted(dependencies)
 
 
 def get_package_contents(version_name, arch, package_name):
-    url = f"https://packages.ubuntu.com/{version_name}/{arch}/{package_name}/filelist"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
     contents = []
-    filelist = soup.find("div", attrs={"id": "pfilelist"})
-    if filelist:
-        pre_filelist = filelist.find("pre")
-        for file in pre_filelist.text.splitlines():
-            contents.append(file)
-    return sorted(contents)
+    try:
+        url = f"https://packages.ubuntu.com/{version_name}/{arch}/{package_name}/filelist"
+        response = http.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        filelist = soup.find("div", attrs={"id": "pfilelist"})
+        if filelist:
+            pre_filelist = filelist.find("pre")
+            for file in pre_filelist.text.splitlines():
+                contents.append(file)
+    except requests.exceptions.RequestException as e:
+        print(f"Network-related error: {e}", file=sys.stderr)
+    except AttributeError as e:
+        print(f"Parsing error: {e}", file=sys.stderr)
+    finally:
+        return sorted(contents)
 
 
 def filter_contents(contents):
@@ -115,7 +142,9 @@ def main():
     dependencies = get_package_dependencies(version_name, args.package_name)
     contents = get_package_contents(version_name, args.arch, args.package_name)
     filtered_contents = filter_contents(contents)
-    yaml_output = generate_yaml(args.package_name, dependencies, filtered_contents)
+    yaml_output = generate_yaml(
+        args.package_name, dependencies, filtered_contents
+    )
 
     print(yaml_output)
 
