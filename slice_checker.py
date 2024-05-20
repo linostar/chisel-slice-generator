@@ -28,6 +28,7 @@ class Dumper(yaml.Dumper):
 
 def map_release_version_to_name(version):
     version_map = {
+        "20.04": "focal",
         "22.04": "jammy",
         "22.10": "kinetic",
         "23.04": "lunar",
