@@ -16,6 +16,8 @@ For example:
 The output of the above example command will look like something like the following:
 ```yaml
 package: libcap2
+essentials:
+  - libcap2_copyright
 slices:
   all:
     essentials:
@@ -25,6 +27,7 @@ slices:
       /usr/lib/x86_64-linux-gnu/libcap.so.2.66:
       /usr/lib/x86_64-linux-gnu/libpsx.so.2:
       /usr/lib/x86_64-linux-gnu/libpsx.so.2.66:
+    copyright:
       /usr/share/doc/libcap2/copyright:
 ```
 
