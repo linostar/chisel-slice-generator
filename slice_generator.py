@@ -133,7 +133,10 @@ def generate_yaml(package_name, dependencies, contents, license_dict):
 
     if not license_dict:
         del data["essentials"]
-        del data["slices"]["all"]["license_dict"]
+        del data["slices"]["all"]["copyright"]
+
+    if not dependencies:
+        del data["slices"]["all"]["essentials"]
 
     Dumper.add_representer(str, represent_empty_string)
     # Dumper.add_representer(dict, empty_line_separator)
