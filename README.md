@@ -36,3 +36,4 @@ slices:
 - [ ] Simplification of contents list using glob patterns
 - [ ] Usage of arch-agnostic paths in contents list
 - [ ] Support for chisel directives
+- [x] Support for copyright slices

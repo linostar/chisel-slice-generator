@@ -89,6 +89,7 @@ def get_package_contents(version_name, arch, package_name):
 
 def filter_contents(contents):
     filtered = dict()
+    license_dict = dict()
     for item in contents:
         if (
             not any(
@@ -102,19 +103,41 @@ def filter_contents(contents):
                     "README",
                 ]
             )
-            or "copyright" in item
-            or "license" in item
         ):
             filtered[item] = ""
-    return filtered
+        if (
+            any(
+                ext in item
+                for ext in [
+                    "/copyright",
+                    "/COPYRIGHT",
+                    "/license_dict",
+                    "/LICENSE_dict",
+                ]
+            )
+        ):
+            license_dict[item] = ""
+    return filtered, license_dict
 
 
-def generate_yaml(package_name, dependencies, contents):
+def generate_yaml(package_name, dependencies, contents, license_dict):
     data = {
         "package": package_name,
-        "slices": {"all": {"essentials": dependencies, "contents": contents}},
+        "essentials": [f"{package_name}_copyright"],
+        "slices": {"all": {
+            "essentials": dependencies,
+            "contents": contents,
+            "copyright": license_dict,
+        }},
     }
-    yaml.add_representer(str, represent_empty_string)
+
+    if not license_dict:
+        del data["essentials"]
+        del data["slices"]["all"]["license_dict"]
+
+    Dumper.add_representer(str, represent_empty_string)
+    # Dumper.add_representer(dict, empty_line_separator)
+
     return yaml.dump(
         data, default_flow_style=False, sort_keys=False, Dumper=Dumper
     )
@@ -143,9 +166,9 @@ def main():
 
     dependencies = get_package_dependencies(version_name, args.package_name)
     contents = get_package_contents(version_name, args.arch, args.package_name)
-    filtered_contents = filter_contents(contents)
+    filtered_contents, license_dict = filter_contents(contents)
     yaml_output = generate_yaml(
-        args.package_name, dependencies, filtered_contents
+        args.package_name, dependencies, filtered_contents, license_dict
     )
 
     print(yaml_output)
