@@ -124,16 +124,20 @@ def generate_yaml(package_name, dependencies, contents, license_dict):
     data = {
         "package": package_name,
         "essentials": [f"{package_name}_copyright"],
-        "slices": {"all": {
-            "essentials": dependencies,
-            "contents": contents,
-            "copyright": license_dict,
-        }},
+        "slices": {
+            "all": {
+                "essentials": dependencies,
+                "contents": contents,
+            },
+            "copyright": {
+                "contents": license_dict
+            },
+        },
     }
 
     if not license_dict:
         del data["essentials"]
-        del data["slices"]["all"]["copyright"]
+        del data["slices"]["copyright"]
 
     if not dependencies:
         del data["slices"]["all"]["essentials"]

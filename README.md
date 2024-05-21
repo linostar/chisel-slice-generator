@@ -27,7 +27,8 @@ slices:
       /usr/lib/x86_64-linux-gnu/libcap.so.2.66:
       /usr/lib/x86_64-linux-gnu/libpsx.so.2:
       /usr/lib/x86_64-linux-gnu/libpsx.so.2.66:
-    copyright:
+  copyright:
+    contents:
       /usr/share/doc/libcap2/copyright:
 ```
 
