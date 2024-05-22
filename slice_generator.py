@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-import requests
 import argparse
+import requests
 import yaml
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
@@ -22,8 +22,8 @@ http.mount("http://", adapter)
 
 
 class Dumper(yaml.Dumper):
-    def increase_indent(self, flow=False, *args, **kwargs):
-        return super().increase_indent(flow=flow, indentless=False)
+    def increase_indent(self, *args, flow=False, indentless=False, **kwargs):
+        return super().increase_indent(flow, indentless, *args, **kwargs)
 
 
 def map_release_version_to_name(version):
@@ -51,10 +51,9 @@ def get_package_dependencies(version_name, package_name):
         response = http.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
         uldeps = soup.find_all("ul", class_="uldep")
-        for i in range(len(uldeps)):
+        for i, uldep in enumerate(uldeps):
             if i == 0:
                 continue
-            uldep = uldeps[i]
             list_items = uldep.find_all("li")
             for li in list_items:  # skip the first item which is the title
                 dep = li.find("a")
