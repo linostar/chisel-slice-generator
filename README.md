@@ -23,21 +23,24 @@ slices:
     essentials:
       - libc6
     contents:
-      /usr/lib/x86_64-linux-gnu/libcap.so.2:
-      /usr/lib/x86_64-linux-gnu/libcap.so.2.66:
-      /usr/lib/x86_64-linux-gnu/libpsx.so.2:
-      /usr/lib/x86_64-linux-gnu/libpsx.so.2.66:
+      /usr/lib/*-linux-*/libcap.so.2*:
+      /usr/lib/*-linux-*/libpsx.so.2*:
   copyright:
     contents:
       /usr/share/doc/libcap2/copyright:
 ```
+
+After running the script, you need to apply few manual changes to the output:
+1. Change the slice name from `all` to something more suitable if needed.
+2. Divide the main slice `all` into multiple slices if needed.
+3. Replace the packages under `essentials` by their slice couterparts (e.g. `libc6` -> `libc6_libs`).
 
 ## Implemented features
 - [x] Dependency generation
 - [x] Content generation
 - [ ] Support for maintainer scripts
 - [ ] Recognition of arch-specific dependencies
-- [ ] Simplification of contents list using glob patterns
+- [x] Simplification of contents list using glob patterns
 - [ ] Usage of arch-agnostic paths in contents list
 - [ ] Support for chisel directives
 - [x] Support for copyright slices

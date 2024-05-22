@@ -20,10 +20,13 @@ http = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
+ARCHS = ["x86_64", "aarch64", "arm", "i386", "powerpc64le", "riscv64", "s390x"]
+GNUS = ["linux-gnu", "linux-gnueabihf"]
+
 
 class Dumper(yaml.Dumper):
-    def increase_indent(self, *args, flow=False, indentless=False, **kwargs):
-        return super().increase_indent(flow, indentless, *args, **kwargs)
+    def increase_indent(self, flow=False, indentless=False, *args, **kwargs):
+        return super().increase_indent(flow, indentless=False, *args, **kwargs)
 
 
 def map_release_version_to_name(version):
@@ -119,6 +122,25 @@ def filter_contents(contents):
     return filtered, license_dict
 
 
+def simplify_contents(contents):
+    # simplify multiple files and replace them by one that has a glob pattern
+    for content in list(contents.keys()):
+        similar_contents = [x for x in list(contents.keys()) if content in x]
+        if len(similar_contents) > 1:
+            contents[content + "*"] = ""
+            for similar in similar_contents:
+                del contents[similar]
+
+    # replace arch and gnu names by correspondant glob patterns
+    keys = list(contents.keys())
+    for i, _ in enumerate(keys):
+        for gnu in GNUS:
+            keys[i] = keys[i].replace(gnu, "linux-*")
+        for arch in ARCHS:
+            keys[i] = keys[i].replace(arch, "*")
+    return dict.fromkeys(keys, "")
+
+
 def generate_yaml(package_name, dependencies, contents, license_dict):
     data = {
         "package": package_name,
@@ -142,7 +164,6 @@ def generate_yaml(package_name, dependencies, contents, license_dict):
         del data["slices"]["all"]["essentials"]
 
     Dumper.add_representer(str, represent_empty_string)
-    # Dumper.add_representer(dict, empty_line_separator)
 
     return yaml.dump(
         data, default_flow_style=False, sort_keys=False, Dumper=Dumper
@@ -174,7 +195,10 @@ def main():
     contents = get_package_contents(version_name, args.arch, args.package_name)
     filtered_contents, license_dict = filter_contents(contents)
     yaml_output = generate_yaml(
-        args.package_name, dependencies, filtered_contents, license_dict
+        args.package_name,
+        dependencies,
+        simplify_contents(filtered_contents),
+        license_dict
     )
 
     print(yaml_output)
