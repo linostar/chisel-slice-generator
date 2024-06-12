@@ -144,10 +144,10 @@ def simplify_contents(contents):
 def generate_yaml(package_name, dependencies, contents, license_dict):
     data = {
         "package": package_name,
-        "essentials": [f"{package_name}_copyright"],
+        "essential": [f"{package_name}_copyright"],
         "slices": {
             "all": {
-                "essentials": dependencies,
+                "essential": dependencies,
                 "contents": contents,
             },
             "copyright": {
@@ -157,11 +157,11 @@ def generate_yaml(package_name, dependencies, contents, license_dict):
     }
 
     if not license_dict:
-        del data["essentials"]
+        del data["essential"]
         del data["slices"]["copyright"]
 
     if not dependencies:
-        del data["slices"]["all"]["essentials"]
+        del data["slices"]["all"]["essential"]
 
     Dumper.add_representer(str, represent_empty_string)
 
